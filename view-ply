@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Open a Gaussian-splat .ply in the Unity PLY Viewer and start Play mode.
+#
+#   ./view-ply /path/to/scene.ply
+#
+# If Unity already has this project open, the file loads into that window; otherwise Unity
+# starts (the first start imports packages and takes a few minutes).
+
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+die() { printf 'view-ply: %s\n' "$*" >&2; exit 1; }
+
+[[ $# -eq 1 ]] || { echo "Usage: $(basename "$0") /path/to/scene.ply" >&2; exit 2; }
+[[ -f "$1" ]] || die "file not found: $1"
+PLY="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+[[ "$(head -c 3 "$PLY")" == "ply" ]] || die "not a PLY file: $PLY"
+
+VERSION="$(sed -n 's/^m_EditorVersion: //p' "$ROOT/ProjectSettings/ProjectVersion.txt")"
+UNITY_APP="${UNITY_APP:-/Applications/Unity/Hub/Editor/$VERSION/Unity.app}"
+[[ -d "$UNITY_APP" ]] || die "Unity $VERSION not found at $UNITY_APP. Install it from Unity Hub, or set UNITY_APP."
+
+mkdir -p "$ROOT/Library/PlyViewer"
+printf '%s\n' "$PLY" > "$ROOT/Library/PlyViewer/open-request.txt"
+
+if pgrep -if -- "-projectPath $ROOT( |$)" >/dev/null; then
+  echo "Loading $(basename "$PLY") into the open Unity window..."
+  open -a "$UNITY_APP"   # bring Unity to the front; it picks up the file within a second
+else
+  echo "Starting Unity with $(basename "$PLY") (first start imports packages: a few minutes)..."
+  open -a "$UNITY_APP" --args -projectPath "$ROOT"
+fi
+echo "When it's playing: click the Game view, then W A S D to move and the mouse to look."

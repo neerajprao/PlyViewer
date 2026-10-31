@@ -1,0 +1,19 @@
+# Unity (generated)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Bb]uild/
+[Bb]uilds/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+.vs/
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# splat files are large; keep them outside the repo
+*.ply
